@@ -1,14 +1,4 @@
-<h1 align="center">
-  llmcord
-</h1>
-
-<h3 align="center"><i>
-  Talk to LLMs with your friends!
-</i></h3>
-
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/7791cc6b-6755-484f-a9e3-0707765b081f" alt="">
-</p>
+# llmcord
 
 llmcord transforms Discord into a collaborative LLM frontend. It works with practically any LLM, remote or locally hosted.
 
@@ -59,28 +49,51 @@ Or run local models with:
 - Displays helpful warnings when appropriate (like "⚠️ Only using last 25 messages" when the customizable message limit is exceeded)
 - Caches message data in a size-managed (no memory leaks) and mutex-protected (no race conditions) global dictionary to maximize efficiency and minimize Discord API calls
 - Fully asynchronous
-- 1 Python file, ~300 lines of code
+- Core runtime in one Python source file: `src/llmcord/llmcord.py`
 
 ## Instructions
 
 1. Clone the repo:
    ```bash
-   git clone https://github.com/jakobdylanc/llmcord
+   git clone <your-repo-url>
    cd llmcord
    ```
 
-2. Enter the Nix development shell and sync dependencies:
+2. Enter the flake development shell:
    ```bash
-   nix develop
-   uv sync --frozen
+   nix develop --impure
    ```
+   `--impure` is required for `devenv` in this flake setup.
 
-3. Install git hooks (one-time per clone):
+3. Sync dependencies and install hooks (one-time per clone):
    ```bash
+   uv sync --frozen
    prek install --hook-type pre-commit --hook-type pre-push
    ```
 
 4. Create a copy of `config-example.yaml` named `config.yaml` and set it up:
+
+5. Run the bot:
+   ```bash
+   uv run llmcord
+   ```
+
+One-shot alternative (without entering an interactive shell):
+```bash
+nix develop --impure --command uv run llmcord
+```
+
+Common development commands:
+```bash
+uv sync --frozen
+prek run --all-files
+uv run python -m pytest
+nix flake check --impure
+nix develop --impure --command uv build
+nix run .#llmcord
+```
+
+## Configuration
 
 ### Discord settings:
 
@@ -103,32 +116,3 @@ Or run local models with:
 | **providers** | Add the LLM providers you want to use, each with a `base_url` and optional `api_key` entry. Popular providers (`openai`, `openrouter`, `ollama`, etc.) are already included.<br /><br />**Only supports OpenAI compatible APIs.**<br /><br />**Some providers may need `extra_headers` / `extra_query` / `extra_body` entries for extra HTTP data. See the included `azure-openai` provider for an example.** |
 | **models** | Add the models you want to use in `<provider>/<model>: <parameters>` format (examples are included). When you run `/model` these models will show up as autocomplete suggestions.<br /><br />**Refer to each provider's documentation for supported parameters.**<br /><br />**The first model in your `models` list will be the default model at startup.**<br /><br />**Some vision models may need `:vision` added to the end of their name to enable image support.** |
 | **system_prompt** | Write anything you want to customize the bot's behavior!<br /><br />**Leave blank for no system prompt.**<br /><br />**You can use the `{date}` and `{time}` tags in your system prompt to insert the current date and time, based on your host computer's time zone.**<br /><br />**It is recommended to include something like `"User messages are prefixed with their Discord ID as <@ID>. Use this format to mention users."` in your system prompt to help the bot understand the user message format.** |
-
-5. Run the bot:
-   ```bash
-   uv run llmcord
-   ```
-
-Optional commands:
-```bash
-prek run --all-files
-uv run python -m pytest
-nix flake check --impure
-nix run .#llmcord
-```
-
-## Notes
-
-- If you're having issues, try my suggestions [here](https://github.com/jakobdylanc/llmcord/issues/19)
-
-- PRs are welcome :)
-
-## Star History
-
-<a href="https://star-history.com/#jakobdylanc/llmcord&Date">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=jakobdylanc/llmcord&type=Date&theme=dark" />
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=jakobdylanc/llmcord&type=Date" />
-    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=jakobdylanc/llmcord&type=Date" />
-  </picture>
-</a>

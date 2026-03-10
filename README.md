@@ -51,47 +51,70 @@ Or run local models with:
 - Fully asynchronous
 - Core runtime in one Python source file: `src/llmcord/llmcord.py`
 
-## Instructions
+## Quick Start (Run Only)
 
-1. Clone the repo:
+1. Clone the repo and enter it:
    ```bash
    git clone <your-repo-url>
    cd llmcord
    ```
 
-2. Enter the flake development shell:
+2. Create a local runtime config:
+   ```bash
+   cp config-example.yaml config.yaml
+   ```
+
+3. Edit `config.yaml` with at least:
+   - `bot_token`
+   - one working provider/model combination in `providers` + `models`
+
+4. Run the app:
+   ```bash
+   nix run
+   ```
+   Equivalent explicit target:
+   ```bash
+   nix run .#llmcord
+   ```
+
+`nix run` is enough for this flake because `apps.<system>.default` points to the `llmcord` executable.
+The app expects `config.yaml` in the current working directory, so run from the repo root.
+
+## Development Setup
+
+1. Enter the development shell:
    ```bash
    nix develop --impure
    ```
    `--impure` is required for `devenv` in this flake setup.
 
-3. Sync dependencies and install hooks (one-time per clone):
+2. Sync dependencies (recommended explicit step):
    ```bash
    uv sync --frozen
+   ```
+
+3. (Contributors) Install git hooks once per clone:
+   ```bash
    prek install --hook-type pre-commit --hook-type pre-push
    ```
 
-4. Create a copy of `config-example.yaml` named `config.yaml` and set it up:
+Why run `uv sync --frozen` if a lockfile already exists?
+- `uv.lock` pins versions, but does not itself install them.
+- `uv sync --frozen` installs exactly what's pinned and fails if lock data is inconsistent.
+- In this repo, `nix develop --impure` already triggers uv sync via `devenv`, so this step can look redundant; it's still useful as an explicit CI/dev verification command.
 
-5. Run the bot:
-   ```bash
-   uv run llmcord
-   ```
+## Command Reference
 
-One-shot alternative (without entering an interactive shell):
-```bash
-nix develop --impure --command uv run llmcord
-```
-
-Common development commands:
-```bash
-uv sync --frozen
-prek run --all-files
-uv run python -m pytest
-nix flake check --impure
-nix develop --impure --command uv build
-nix run .#llmcord
-```
+| Command | Purpose |
+| --- | --- |
+| `nix run` | Run the app via the default flake app target (`llmcord`). |
+| `nix run .#llmcord` | Run the app via explicit app target name. |
+| `nix develop --impure` | Enter the devenv development shell. |
+| `uv sync --frozen` | Install exact locked dependencies (no lockfile updates). |
+| `prek run --all-files` | Run configured formatting/lint/hooks checks. |
+| `uv run python -m pytest` | Run test suite. |
+| `nix flake check --impure` | Run flake-level checks (package + pre-commit check). |
+| `nix develop --impure --command uv build` | Build source/wheel distributions. |
 
 ## Configuration
 

@@ -3,6 +3,8 @@ name: Test
 on:
   pull_request:
   push:
+    branches:
+      - "**"
 
 permissions:
   contents: read
@@ -33,6 +35,9 @@ jobs:
 
       - name: Run tests
         run: nix develop --impure --command uv run python -m pytest
+
+      - name: Validate package build
+        run: nix develop --impure --command uv build
 
       - name: Run flake checks
         run: nix flake check --impure

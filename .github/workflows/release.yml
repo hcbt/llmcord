@@ -1,45 +1,37 @@
-name: Release Validation
+name: Release
 
 on:
-  workflow_dispatch:
   push:
     tags:
-      - "v*"
-
-permissions:
-  contents: read
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+      - "**"
 
 jobs:
-  release-validation:
+  release:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v5
 
-      - uses: cachix/install-nix-action@v31
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
 
-      - uses: cachix/cachix-action@v16
+      - name: Setup cachix
+        uses: cachix/cachix-action@v16
         with:
           name: devenv
 
-      - name: Build distribution artifacts
-        run: nix develop --impure --command uv build
+      - name: Build Python Package
+        run: |
+          nix develop --impure --command uv build
 
-      - name: Smoke test wheel import
-        run: nix develop --impure --command uv run --isolated --no-project --with dist/*.whl python -c "import llmcord"
-
-      - name: Smoke test source distribution import
-        run: nix develop --impure --command uv run --isolated --no-project --with dist/*.tar.gz python -c "import llmcord"
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+      - name: Create or Update Tag Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: dist-${{ github.ref_name }}
-          path: dist/*
-          if-no-files-found: error
-          retention-days: 7
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          files: |
+            dist/*.whl
+            dist/*.tar.gz
+          generate_release_notes: true

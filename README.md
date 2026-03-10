@@ -69,7 +69,18 @@ Or run local models with:
    cd llmcord
    ```
 
-2. Create a copy of "config-example.yaml" named "config.yaml" and set it up:
+2. Enter the Nix development shell and sync dependencies:
+   ```bash
+   nix develop
+   uv sync --frozen
+   ```
+
+3. Install git hooks (one-time per clone):
+   ```bash
+   prek install --hook-type pre-commit --hook-type pre-push
+   ```
+
+4. Create a copy of `config-example.yaml` named `config.yaml` and set it up:
 
 ### Discord settings:
 
@@ -93,18 +104,18 @@ Or run local models with:
 | **models** | Add the models you want to use in `<provider>/<model>: <parameters>` format (examples are included). When you run `/model` these models will show up as autocomplete suggestions.<br /><br />**Refer to each provider's documentation for supported parameters.**<br /><br />**The first model in your `models` list will be the default model at startup.**<br /><br />**Some vision models may need `:vision` added to the end of their name to enable image support.** |
 | **system_prompt** | Write anything you want to customize the bot's behavior!<br /><br />**Leave blank for no system prompt.**<br /><br />**You can use the `{date}` and `{time}` tags in your system prompt to insert the current date and time, based on your host computer's time zone.**<br /><br />**It is recommended to include something like `"User messages are prefixed with their Discord ID as <@ID>. Use this format to mention users."` in your system prompt to help the bot understand the user message format.** |
 
-3. Run the bot:
-
-   **No Docker:**
+5. Run the bot:
    ```bash
-   python -m pip install -U -r requirements.txt
-   python llmcord.py
+   uv run llmcord
    ```
 
-   **With Docker:**
-   ```bash
-   docker compose up
-   ```
+Optional commands:
+```bash
+prek run --all-files
+uv run python -m pytest
+nix flake check --impure
+nix run .#llmcord
+```
 
 ## Notes
 

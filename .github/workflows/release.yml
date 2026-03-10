@@ -1,0 +1,45 @@
+name: Release Validation
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  release-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: cachix/install-nix-action@v31
+
+      - uses: cachix/cachix-action@v16
+        with:
+          name: devenv
+
+      - name: Build distribution artifacts
+        run: nix develop --impure --command uv build
+
+      - name: Smoke test wheel import
+        run: nix develop --impure --command uv run --isolated --no-project --with dist/*.whl python -c "import llmcord"
+
+      - name: Smoke test source distribution import
+        run: nix develop --impure --command uv run --isolated --no-project --with dist/*.tar.gz python -c "import llmcord"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ github.ref_name }}
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 7

@@ -1,0 +1,38 @@
+name: Test
+
+on:
+  pull_request:
+  push:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: cachix/install-nix-action@v31
+
+      - uses: cachix/cachix-action@v16
+        with:
+          name: devenv
+
+      - name: Sync dependencies
+        run: nix develop --impure --command uv sync --frozen
+
+      - name: Run hooks
+        run: nix develop --impure --command prek run --all-files
+
+      - name: Run tests
+        run: nix develop --impure --command uv run python -m pytest
+
+      - name: Run flake checks
+        run: nix flake check --impure

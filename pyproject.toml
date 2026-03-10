@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 [project.scripts]
-llmcord = "llmcord:main"
+llmcord = "llmcord.llmcord:main"
 
 [dependency-groups]
 dev = [

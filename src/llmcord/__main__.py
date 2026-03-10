@@ -1,4 +1,4 @@
-from llmcord import main
+from llmcord.llmcord import main
 
 
 if __name__ == "__main__":

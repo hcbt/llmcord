@@ -116,6 +116,26 @@ Why run `uv sync --frozen` if a lockfile already exists?
 | `nix flake check --impure` | Run flake-level checks (package + pre-commit check). |
 | `nix develop --impure --command uv build` | Build source/wheel distributions. |
 
+## PyPI Publishing (Maintainers)
+
+Publishing is handled by `.github/workflows/publish.yml` and runs on `v*` tags:
+
+1. Build wheel + sdist once.
+2. Publish to TestPyPI (`environment: testpypi`).
+3. Publish to PyPI (`environment: pypi`) after TestPyPI succeeds.
+
+Required one-time setup outside the repo:
+
+1. Create GitHub environments named `testpypi` and `pypi`.
+2. On TestPyPI, add a Trusted Publisher:
+   - owner: `hcbt`
+   - repo: `llmcord`
+   - workflow: `.github/workflows/publish.yml`
+   - environment: `testpypi`
+   - project: `llmcord`
+3. On PyPI, add the same Trusted Publisher but with environment `pypi`.
+4. For the first publish of a new project, use pending publisher flow and ensure the project name is exactly `llmcord`.
+
 ## Configuration
 
 ### Discord settings:
